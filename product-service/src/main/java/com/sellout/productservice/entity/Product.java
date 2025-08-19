@@ -30,7 +30,10 @@ public class Product {
 
     private Long sellerId;
 
+    private LocalDateTime lastUpdatedTime;
+
     public Product() {
+
     }
 
     public Product(Long id, String name, String description, BigDecimal startingPrice, BigDecimal currentPrice,
@@ -104,6 +107,10 @@ public class Product {
 
     public boolean isActive() {
         return isActive;
+    }
+
+    public void setLastUpdatedTime() {
+        this.lastUpdatedTime = this.lastUpdatedTime = LocalDateTime.now();;
     }
 
     public void setActive(boolean active) {

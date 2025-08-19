@@ -19,7 +19,7 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<ProductResponse> create(@RequestBody ProductRequest request) {
         return ResponseEntity.ok(productService.createProduct(request));
     }
@@ -29,7 +29,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    @GetMapping
+    @GetMapping("all")
     public ResponseEntity<List<ProductResponse>> getAll() {
         return ResponseEntity.ok(productService.getAllProducts());
     }

@@ -1,12 +1,15 @@
 package com.sellout.productservice.service.impl;
 
+import com.sellout.productservice.cache.RedisKeys;
 import com.sellout.productservice.dto.ProductRequest;
 import com.sellout.productservice.dto.ProductResponse;
 import com.sellout.productservice.entity.Product;
 import com.sellout.productservice.repository.ProductRepository;
 import com.sellout.productservice.service.ProductService;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,9 +17,11 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final StringRedisTemplate redis;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, StringRedisTemplate redis) {
         this.productRepository = productRepository;
+        this.redis = redis;
     }
 
     @Override
@@ -26,12 +31,21 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.getDescription());
         product.setStartingPrice(request.getStartingPrice());
         product.setCurrentPrice(request.getStartingPrice());
-        product.setStartTime(request.getStartTime());
+        product.setStartTime(LocalDateTime.now());
         product.setEndTime(request.getEndTime());
         product.setActive(true);
         product.setSellerId(request.getSellerId());
-
+        product.setLastUpdatedTime();
         Product saved = productRepository.save(product);
+
+
+        // Seed Redis for fast bidding
+        Long productId = saved.getId();
+        redis.opsForValue().set(RedisKeys.currentPrice(productId), request.getStartingPrice().toPlainString());
+        redis.opsForValue().set(RedisKeys.activeFlag(productId), "1");
+        // optional: preload highest bidder as empty
+        redis.opsForValue().set(RedisKeys.highestBidder(productId), "");
+
         return mapToResponse(saved);
     }
 
